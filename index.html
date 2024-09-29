@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ar">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <!---->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
+
+  <title>عرض بيانات غياب الطلبة</title>
+  <style>
+    #message {
+      color: green;
+      font-weight: bold;
+      display: none;
+    }
+
+    body {
+      width: 95%;
+      margin: auto;
+      background-color: #f5e947e8;
+    }
+
+    .table {
+      border: 2px solid blue;
+    }
+
+    .table th,
+    .table td,
+    .table thead th {
+      border: 1px solid blue;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      /* محاذاة عمودية */
+      margin-bottom: 20px;
+      /* إضافة مسافة بين الحقول */
+    }
+
+    .label {
+      margin-right: 10px;
+      /* مسافة بين الليبل و الحقل */
+      flex: 0 0 100px;
+      /* عرض ثابت لليبل */
+    }
+
+    .input,
+    .select {
+      flex: 1;
+      /* يجعل الحقل يأخذ المساحة المتبقية */
+      max-width: 150px;
+      /* تحديد عرض أقصى للحقل */
+    }
+  </style>
+</head>
+
+<body>
+  <!--
+  <img
+    src="https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/72E1oahjHmHesg6v46ID/pub/klHkGYr2jmhw7ZqIw157.png"
+    alt="Logo" width="100%"> -->
+  <section class="section">
+    <div class="container">
+      <h1 class="title">عرض بيانات غياب الطلبة</h1>
+
+      <div class="field">
+        <label class="label">البحث بالتاريخ</label>
+        <input id="search-date" class="input" type="date" placeholder="اختر تاريخ">
+        <button class="button is-primary" onclick="fetchByDate()">بحث بالتاريخ</button>
+      </div>
+
+      <div class="field">
+        <label class="label">البحث بالصف</label>
+        <div class="select">
+          <select id="search-class">
+            <option value="">اختر الصف</option>
+            <option value="خامس أول">خامس أول</option>
+            <option value="خامس ثاني">خامس ثاني</option>
+            <option value="خامس ثالث">خامس ثالث</option>
+            <option value="خامس رابع">خامس رابع</option>
+            <option value="سادس أول">سادس أول</option>
+            <option value="سادس ثاني">سادس ثاني</option>
+            <option value="سادس ثالث">سادس ثالث</option>
+            <option value="سادس رابع">سادس رابع</option>
+            <option value="سابع أول">سابع أول</option>
+            <option value="سابع ثاني">سابع ثاني</option>
+            <option value="سابع ثالث">سابع ثالث</option>
+            <option value="سابع رابع">سابع رابع</option>
+            <option value="ثامن أول">ثامن أول</option>
+            <option value="ثامن ثاني">ثامن ثاني</option>
+            <option value="ثامن ثالث">ثامن ثالث</option>
+            <option value="ثامن رابع">ثامن رابع</option>
+            <option value="تاسع أول">تاسع أول</option>
+            <option value="تاسع ثاني">تاسع ثاني</option>
+            <option value="تاسع ثالث">تاسع ثالث</option>
+            <option value="تاسع رابع">تاسع رابع</option>
+            <option value="عاشر أول">عاشر أول</option>
+            <option value="عاشر ثاني">عاشر ثاني</option>
+            <option value="عاشر ثالث">عاشر ثالث</option>
+            <option value="عاشر رابع">عاشر رابع</option>
+            <option value="حادي عشر ب 1">حادي عشر ب 1</option>
+            <option value="حادي عشر ب 2">حادي عشر ب 2</option>
+            <option value="حادي عشر ط 1">حادي عشر ط 1</option>
+            <option value="حادي عشر ط 2">حادي عشر ط 2</option>
+            <option value="ثاني عشر ب 1">ثاني عشر ب 1</option>
+            <option value="ثاني عشر ب 2">ثاني عشر ب 2</option>
+            <option value="ثاني عشر ط 1">ثاني عشر ط 1</option>
+            <option value="ثاني عشر ط 2">ثاني عشر ط 2</option>
+          </select>
+        </div>
+        <button class="button is-primary" onclick="fetchByClass()">بحث بالصف</button>
+      </div>
+<!--
+      <div class="field">
+        <label class="label">البحث بالحصة</label>
+        <div class="select">
+          <select id="search-period">
+            <option value="">اختر الحصة</option>
+            <option value="الأولى">الأولى</option>
+            <option value="الثانية">الثانية</option>
+            <option value="الثالثة">الثالثة</option>
+            <option value="الرابعة">الرابعة</option>
+            <option value="الخامسة">الخامسة</option>
+            <option value="السادسة">السادسة</option>
+            <option value="السابعة">السابعة</option>
+            <option value="الثامنة">الثامنة</option>
+          </select>
+        </div>
+        <button class="button is-primary" onclick="fetchByPeriod()">بحث بالحصة</button>
+      </div> -->
+      <div class="field">
+        <label class="label">البحث بالتاريخ والصف</label>
+        <input id="search-date-combined" class="input" type="date" placeholder="اختر تاريخ">
+        <div class="select" style="margin-left: 10px;">
+          <select id="search-class-combined">
+            <option value="">اختر الصف</option>
+            <option value="خامس أول">خامس أول</option>
+            <option value="خامس ثاني">خامس ثاني</option>
+            <option value="خامس ثالث">خامس ثالث</option>
+            <option value="خامس رابع">خامس رابع</option>
+            <option value="سادس أول">سادس أول</option>
+            <option value="سادس ثاني">سادس ثاني</option>
+            <option value="سادس ثالث">سادس ثالث</option>
+            <option value="سادس رابع">سادس رابع</option>
+            <option value="سابع أول">سابع أول</option>
+            <option value="سابع ثاني">سابع ثاني</option>
+            <option value="سابع ثالث">سابع ثالث</option>
+            <option value="سابع رابع">سابع رابع</option>
+            <option value="ثامن أول">ثامن أول</option>
+            <option value="ثامن ثاني">ثامن ثاني</option>
+            <option value="ثامن ثالث">ثامن ثالث</option>
+            <option value="ثامن رابع">ثامن رابع</option>
+            <option value="تاسع أول">تاسع أول</option>
+            <option value="تاسع ثاني">تاسع ثاني</option>
+            <option value="تاسع ثالث">تاسع ثالث</option>
+            <option value="تاسع رابع">تاسع رابع</option>
+            <option value="عاشر أول">عاشر أول</option>
+            <option value="عاشر ثاني">عاشر ثاني</option>
+            <option value="عاشر ثالث">عاشر ثالث</option>
+            <option value="عاشر رابع">عاشر رابع</option>
+            <option value="حادي عشر ب 1">حادي عشر ب 1</option>
+            <option value="حادي عشر ب 2">حادي عشر ب 2</option>
+            <option value="حادي عشر ط 1">حادي عشر ط 1</option>
+            <option value="حادي عشر ط 2">حادي عشر ط 2</option>
+            <option value="ثاني عشر ب 1">ثاني عشر ب 1</option>
+            <option value="ثاني عشر ب 2">ثاني عشر ب 2</option>
+            <option value="ثاني عشر ط 1">ثاني عشر ط 1</option>
+            <option value="ثاني عشر ط 2">ثاني عشر ط 2</option>
+          </select>
+        </div>
+        <button class="button is-primary" onclick="fetchByDateAndClass()">بحث بالتاريخ والصف</button>
+      </div>
+      
+
+      <div class="control" style="margin-top: 20px;">
+        <button class="button is-warning" onclick="fetchAllData()">عرض جميع البيانات</button>
+      </div>
+
+      <p id="message">جاري التحميل رجاء الانتظار .......</p>
+
+      <table class="table is-fullwidth is-striped" style="width: 65%;">
+        <thead>
+          <tr>
+            <th>م</th>
+            <th>اسم الطالب</th>
+            <th>الصف</th>
+            <th>الحصة</th>
+            <th>التاريخ</th>
+            <th>اسم المعلم</th>
+            <th>نوع الغياب</th>
+          </tr>
+        </thead>
+        <tbody id="data-table">
+        </tbody>
+      </table>
+
+      <div class="control" style="margin-top: 20px;">
+        <button class="button is-danger" onclick="clearData()">مسح البيانات</button>
+      </div>
+
+      <div class="control" style="margin-top: 20px;">
+        <button class="button is-info" onclick="exitPage()">خروج</button>
+      </div>
+
+      <!-- زر الطباعة 
+      <div class="control" style="margin-top: 20px;">
+        <button class="button is-success" onclick="printTable()">طباعة الجدول بصيغة PDF</button>
+      </div> -->
+
+      <!-- زر تنزيل Excel -->
+      <div class="control" style="margin-top: 20px;">
+        <button class="button is-success" onclick="downloadStyledExcel()">تنزيل الجدول بصيغة Excel</button>
+
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbyW9m7d4g_ypqwEr86TTjU_ZBrl3LLnOnnGeo5ZNYilhvtLCcYLQZZAss6Oxy5EX31wiQ/exec';
+
+    function fetchByDate() {
+      const searchDate = document.getElementById('search-date').value;
+      if (!searchDate) {
+        alert('يرجى تحديد تاريخ للبحث');
+        return;
+      }
+      fetchData(`?date=${searchDate}`);
+    }
+
+    function fetchByClass() {
+      const searchClass = document.getElementById('search-class').value;
+      if (!searchClass) {
+        alert('يرجى تحديد صف للبحث');
+        return;
+      }
+      fetchData(`?class_num=${searchClass}`); // استخدام class_num للصف
+    }
+
+    function fetchByPeriod() {
+      const searchPeriod = document.getElementById('search-period').value;
+      if (!searchPeriod) {
+        alert('يرجى تحديد حصة للبحث');
+        return;
+      }
+      fetchData(`?period=${searchPeriod}`);
+    }
+
+    function fetchAllData() {
+      fetchData();
+    }
+
+    function fetchData(queryString = '') {
+      const messageElement = document.getElementById('message');
+      messageElement.style.display = 'block'; // إظهار الرسالة
+      messageElement.innerText = 'جاري التحميل رجاء الانتظار .......';
+      
+      fetch(scriptUrl + queryString)
+        .then(response => response.json())
+        .then(data => {
+          messageElement.style.display = 'none'; // إخفاء الرسالة
+          const tableBody = document.getElementById('data-table');
+          tableBody.innerHTML = ''; // مسح الجدول الحالي
+
+          if (data.length === 0) {
+            alert('لا توجد بيانات لعرضها');
+            return;
+          }
+
+          data.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.Stu_name}</td>
+          <td>${item.class_num}</td>
+          <td>${item.period_num}</td>
+          <td>${item.date}</td>
+          <td>${item.teacher_name}</td>
+          <td>${item.absent}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+          messageElement.style.display = 'none'; // إخفاء الرسالة
+        });
+    }
+
+    function clearData() {
+      const tableBody = document.getElementById('data-table');
+      tableBody.innerHTML = ''; // مسح الجدول
+    }
+
+    function exitPage() {
+      window.close(); // إغلاق الصفحة
+    }
+
+    function printTable() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.autoTable({ html: '#data-table' });
+      doc.save('attendance_data.pdf');
+    }
+
+    function downloadExcel() {
+      const tableElement = document.getElementById('data-table');
+
+      // التأكد من وجود بيانات في الجدول
+      if (tableElement.rows.length === 0) {
+        alert('لا توجد بيانات لتنزيلها.');
+        return;
+      }
+
+      // إنشاء مصفوفة لتخزين البيانات
+      const data = [];
+      const headers = [];
+
+      // الحصول على العناوين من الصف الأول
+      const headerRow = tableElement.closest("table").querySelector("thead").rows[0].cells;
+      for (let i = 0; i < headerRow.length; i++) {
+        headers.push(headerRow[i].innerText);
+      }
+      data.push(headers);
+
+      // الحصول على البيانات من الجدول
+      for (let i = 0; i < tableElement.rows.length; i++) {
+        const rowData = [];
+        for (let j = 0; j < tableElement.rows[i].cells.length; j++) {
+          rowData.push(tableElement.rows[i].cells[j].innerText);
+        }
+        data.push(rowData);
+      }
+
+      // إنشاء ورقة العمل
+      const ws = XLSX.utils.aoa_to_sheet(data);
+
+      // إنشاء كتاب العمل
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "بيانات الغياب");
+
+      // تنزيل الملف بصيغة Excel
+      XLSX.writeFile(wb, "attendance_data.xlsx");
+    }
+    function fetchByDateAndClass() {
+  const searchDate = document.getElementById('search-date-combined').value;
+  const searchClass = document.getElementById('search-class-combined').value;
+
+  if (!searchDate) {
+    alert('يرجى تحديد تاريخ للبحث');
+    return;
+  }
+  
+  if (!searchClass) {
+    alert('يرجى تحديد صف للبحث');
+    return;
+  }
+
+  fetchData(`?date=${searchDate}&class_num=${searchClass}`);
+}
+
+function downloadStyledExcel() {
+  const tableElement = document.getElementById('data-table');
+
+  if (tableElement.rows.length === 0) {
+    alert('لا توجد بيانات لتنزيلها.');
+    return;
+  }
+
+  const data = [];
+  const headers = [];
+  const headerRow = tableElement.closest("table").querySelector("thead").rows[0].cells;
+
+  for (let i = 0; i < headerRow.length; i++) {
+    headers.push(headerRow[i].innerText);
+  }
+  data.push(headers);
+
+  for (let i = 0; i < tableElement.rows.length; i++) {
+    const rowData = [];
+    for (let j = 0; j < tableElement.rows[i].cells.length; j++) {
+      rowData.push(tableElement.rows[i].cells[j].innerText);
+    }
+    data.push(rowData);
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  // تخصيص الأنماط
+  const cellRange = XLSX.utils.decode_range(ws['!ref']);
+  
+  for (let row = cellRange.s.r; row <= cellRange.e.r; row++) {
+    for (let col = cellRange.s.c; col <= cellRange.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({r: row, c: col});
+      if (!ws[cellAddress]) continue;
+      
+      // تعيين حجم الخط
+      ws[cellAddress].s = {
+        font: {
+          name: "Arial",
+          sz: 14,
+          bold: true,
+          color: { rgb: "1" },
+        },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } },
+        }
+      };
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "بيانات الغياب");
+  
+  XLSX.writeFile(wb, "attendance_data.xlsx");
+}
+
+  </script>
+</body>
+
+</html>
